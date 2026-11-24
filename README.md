@@ -46,7 +46,8 @@ checks it against Google's public signing keys (using `jose`). That check doesn'
 | `GET/POST/PATCH /api/me`      | Read, create (optionally importing this browser's stats), or rename your profile |
 | `POST /api/results`           | Record a finished daily puzzle: `{ day, picks }`                     |
 | `GET /api/results/:day`       | Your result for a day, used to restore the board on another device  |
-| `GET /api/leaderboard`        | `?board=today\|points\|streak&day=N`. Public; includes your rank when you're signed in |
+| `POST /api/gauntlet`          | Record a finished Gauntlet run: `{ seed, rounds }`. The score is recomputed by replaying the run |
+| `GET /api/leaderboard`        | `?board=today\|points\|streak\|gauntlet&day=N`. Public; includes your rank when you're signed in |
 | `PUT/DELETE /api/me/avatar`  | Set your picture (a character, or an uploaded photo the browser shrinks to 256×256 first) or remove it |
 | `GET /api/avatar/:uid`        | A player's uploaded picture (public, cached per version)              |
 
