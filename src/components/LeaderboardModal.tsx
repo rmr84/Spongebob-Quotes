@@ -51,7 +51,7 @@ export function LeaderboardModal({ day, uid, profile, onClose, onSignIn }: Props
           </button>
         ))}
       </nav>
-
+        
       <div className="my-rank">
         {!uid ? (
           <>
