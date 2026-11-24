@@ -1,0 +1,12 @@
+node_modules
+dist
+.DS_Store
+*.local
+*.tsbuildinfo
+.env
+scripts/.cache
+*-debug.log
+.firebase
+.next
+next-env.d.ts
+.vercel

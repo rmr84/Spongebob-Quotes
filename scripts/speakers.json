@@ -1,0 +1,104 @@
+{
+  "SPEAKER_ALIASES": {
+    "spongebob": [
+      "SpongeBob",
+      "SpongeBob SquarePants",
+      "Thought Bubble SpongeBob"
+    ],
+    "patrick": [
+      "Patrick",
+      "Patrick Star"
+    ],
+    "squidward": [
+      "Squidward",
+      "Squidward Tentacles"
+    ],
+    "krabs": [
+      "Mr. Krabs",
+      "Eugene H. Krabs",
+      "Eugene Krabs",
+      "Krabs"
+    ],
+    "sandy": [
+      "Sandy",
+      "Sandy Cheeks"
+    ],
+    "plankton": [
+      "Plankton",
+      "Sheldon J. Plankton",
+      "Sheldon Plankton",
+      "Mr. Plankton"
+    ],
+    "karen": [
+      "Karen",
+      "Karen Plankton"
+    ],
+    "puff": [
+      "Mrs. Puff"
+    ],
+    "pearl": [
+      "Pearl",
+      "Pearl Krabs"
+    ],
+    "mermaidman": [
+      "Mermaid Man"
+    ],
+    "barnacleboy": [
+      "Barnacle Boy"
+    ],
+    "larry": [
+      "Larry",
+      "Larry the Lobster"
+    ],
+    "squilliam": [
+      "Squilliam",
+      "Squilliam Fancyson"
+    ],
+    "dutchman": [
+      "Flying Dutchman",
+      "The Flying Dutchman"
+    ],
+    "narrator": [
+      "French Narrator",
+      "Narrator"
+    ],
+    "patchy": [
+      "Patchy",
+      "Patchy the Pirate"
+    ],
+    "potty": [
+      "Potty",
+      "Potty the Parrot"
+    ],
+    "bubblebass": [
+      "Bubble Bass"
+    ],
+    "neptune": [
+      "King Neptune",
+      "Neptune"
+    ],
+    "manray": [
+      "Man Ray"
+    ],
+    "dirtybubble": [
+      "Dirty Bubble"
+    ],
+    "perch": [
+      "Perch Perkins",
+      "Perch"
+    ],
+    "jenkins": [
+      "Old Man Jenkins"
+    ],
+    "kevin": [
+      "Kevin",
+      "Kevin C. Cucumber"
+    ],
+    "conch": [
+      "Magic Conch",
+      "Magic Conch Shell",
+      "The Magic Conch",
+      "Magic Conch Shell (voice)"
+    ]
+  }
+}
