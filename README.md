@@ -39,7 +39,7 @@ src/data/quotes.json        generated quote data
 
 Player data is stored in **MongoDB**. The browser never connects to the database; only the API routes do. **Firebase** is
 used only for signing in (and Analytics). The browser sends its Firebase ID token with each API request, and the server
-checks it with `firebase-admin`. That check doesn't need a Firebase secret, only the project id.
+checks it against Google's public signing keys (using `jose`). That check doesn't need a Firebase secret, only the project id.
 
 | Route                         | What it does                                                         |
 | ----------------------------- | -------------------------------------------------------------------- |
