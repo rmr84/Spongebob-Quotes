@@ -15,7 +15,7 @@ import type { AccountState } from '../lib/useAccount';
 import type { Stats } from '../lib/storage';
 import type { GameState } from '../lib/game';
 import { Modal } from './Modal';
-import { CheckIcon, SignOutIcon } from './Icons';
+import { CheckIcon, EyeIcon, EyeOffIcon, SignOutIcon } from './Icons';
 import { PlayerAvatar } from './PlayerAvatar';
 import { CHARACTERS } from '../data/characters';
 import { Avatar } from './Avatar';
@@ -99,6 +99,7 @@ type AuthMode = 'signin' | 'signup';
 function SignIn({ mode, setMode }: { mode: AuthMode; setMode: (m: AuthMode) => void }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
@@ -146,14 +147,28 @@ function SignIn({ mode, setMode }: { mode: AuthMode; setMode: (m: AuthMode) => v
         </label>
         <label>
           Password
-          <input
-            type="password"
-            autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
-            required
-            minLength={6}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
+          <span className="password-field">
+            <input
+              type={showPassword ? 'text' : 'password'}
+              autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
+              required
+              minLength={6}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <button
+              type="button"
+              className="password-toggle"
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
+              aria-pressed={showPassword}
+              onClick={() => setShowPassword((v) => !v)}
+            >
+              {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+            </button>
+          </span>
         </label>
         {error && <p className="form-error">{error}</p>}
         {notice && <p className="form-notice">{notice}</p>}
