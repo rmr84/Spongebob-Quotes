@@ -81,3 +81,38 @@ export function recordResult(day: number, state: GameState): Stats {
   write(STATS_KEY, stats);
   return stats;
 }
+
+// ------------------------------------------------------------------ gauntlet
+
+const RUN_KEY = 'bbd:gauntlet';
+const GAUNTLET_STATS_KEY = 'bbd:gauntletStats';
+
+export interface SavedRun {
+  seed: number;
+  rounds: string[][];
+  /** Best score before this run started, to spot a new record. */
+  bestBefore: number;
+  /** Counted in this device's gauntlet stats. */
+  recorded?: boolean;
+  /** Saved to the player's account. */
+  submitted?: boolean;
+}
+
+export interface GauntletStats {
+  best: number;
+  played: number;
+}
+
+export const loadRun = () => read<SavedRun>(RUN_KEY);
+export const saveRun = (run: SavedRun | null) => (run ? write(RUN_KEY, run) : localStorage.removeItem(RUN_KEY));
+
+export function loadGauntletStats(): GauntletStats {
+  return { best: 0, played: 0, ...read<GauntletStats>(GAUNTLET_STATS_KEY) };
+}
+
+export function recordRun(cleared: number): GauntletStats {
+  const s = loadGauntletStats();
+  const next = { best: Math.max(s.best, cleared), played: s.played + 1 };
+  write(GAUNTLET_STATS_KEY, next);
+  return next;
+}

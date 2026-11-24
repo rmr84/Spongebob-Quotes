@@ -1,20 +1,22 @@
-import type { Stats } from '../lib/storage';
+import type { GauntletStats, Stats } from '../lib/storage';
 import { Modal } from './Modal';
 
 interface Props {
   stats: Stats;
   highlight?: number; // guess count of today's win, 1-based
+  gauntlet: GauntletStats;
   signedIn: boolean;
   onSignIn: () => void;
   onClose: () => void;
 }
 
-export function StatsModal({ stats, highlight, signedIn, onSignIn, onClose }: Props) {
+export function StatsModal({ stats, highlight, gauntlet, signedIn, onSignIn, onClose }: Props) {
   const winPct = stats.played ? Math.round((stats.wins / stats.played) * 100) : 0;
   const max = Math.max(1, ...stats.distribution);
 
   return (
     <Modal title="Statistics" onClose={onClose}>
+      <h3 className="first">Daily</h3>
       <div className="stat-row">
         <Stat value={stats.played} label="Played" />
         <Stat value={winPct} label="Win %" />
@@ -34,6 +36,11 @@ export function StatsModal({ stats, highlight, signedIn, onSignIn, onClose }: Pr
             </div>
           </div>
         ))}
+      </div>
+      <h3>Gauntlet</h3>
+      <div className="stat-row two">
+        <Stat value={gauntlet.best} label="Best run" />
+        <Stat value={gauntlet.played} label="Runs played" />
       </div>
       {!signedIn && (
         <div className="signin-nudge">

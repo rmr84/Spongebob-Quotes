@@ -8,20 +8,22 @@ import { PlayerAvatar } from './PlayerAvatar';
 
 interface Props {
   day: number;
+  initialBoard: Board;
   uid: string | null;
   profile: Profile | null;
   onClose: () => void;
   onSignIn: () => void;
 }
 
-const TABS: { id: Board; label: string; unit: string }[] = [
-  { id: 'today', label: 'Today', unit: 'pts' },
-  { id: 'points', label: 'All-time', unit: 'pts' },
-  { id: 'streak', label: 'Best streak', unit: 'days' },
+const DAILY_TABS: { id: Board; label: string }[] = [
+  { id: 'today', label: 'Today' },
+  { id: 'points', label: 'All-time' },
+  { id: 'streak', label: 'Best streak' },
 ];
+const UNITS: Record<Board, string> = { today: 'pts', points: 'pts', streak: 'days', gauntlet: 'quotes' };
 
-export function LeaderboardModal({ day, uid, profile, onClose, onSignIn }: Props) {
-  const [board, setBoard] = useState<Board>('today');
+export function LeaderboardModal({ day, initialBoard, uid, profile, onClose, onSignIn }: Props) {
+  const [board, setBoard] = useState<Board>(initialBoard);
   const [data, setData] = useState<LeaderboardResponse | null>(null);
   const [error, setError] = useState('');
 
@@ -39,19 +41,30 @@ export function LeaderboardModal({ day, uid, profile, onClose, onSignIn }: Props
     // Refetch when the profile changes (e.g. today's result was just saved).
   }, [board, day, profile]);
 
-  const unit = TABS.find((t) => t.id === board)!.unit;
+  const unit = UNITS[board];
+  const gauntlet = board === 'gauntlet';
   const rows = data?.rows;
 
   return (
     <Modal title="Leaderboards" onClose={onClose}>
-      <nav className="tabs small" aria-label="Leaderboard">
-        {TABS.map((t) => (
-          <button key={t.id} className={board === t.id ? 'on' : ''} onClick={() => setBoard(t.id)}>
-            {t.label}
-          </button>
-        ))}
+      <nav className="tabs small modes" aria-label="Game mode">
+        <button className={!gauntlet ? 'on' : ''} onClick={() => setBoard('today')}>
+          📅 Daily
+        </button>
+        <button className={gauntlet ? 'on' : ''} onClick={() => setBoard('gauntlet')}>
+          🔥 Gauntlet
+        </button>
       </nav>
-        
+      {!gauntlet && (
+        <nav className="tabs small" aria-label="Leaderboard">
+          {DAILY_TABS.map((t) => (
+            <button key={t.id} className={board === t.id ? 'on' : ''} onClick={() => setBoard(t.id)}>
+              {t.label}
+            </button>
+          ))}
+        </nav>
+      )}
+
       <div className="my-rank">
         {!uid ? (
           <>
@@ -69,7 +82,7 @@ export function LeaderboardModal({ day, uid, profile, onClose, onSignIn }: Props
             You’re <strong>#{data.me.rank}</strong> of {data.me.total.toLocaleString()}
           </span>
         ) : (
-          <span>Finish today’s puzzle to get ranked.</span>
+          <span>{gauntlet ? 'Finish a Gauntlet run to get ranked.' : 'Finish today’s puzzle to get ranked.'}</span>
         )}
       </div>
 
@@ -78,7 +91,13 @@ export function LeaderboardModal({ day, uid, profile, onClose, onSignIn }: Props
       ) : !rows ? (
         <p>Loading…</p>
       ) : rows.length === 0 ? (
-        <p>{board === 'today' ? 'Nobody has finished today’s puzzle yet. Be the first!' : 'No players yet.'}</p>
+        <p>
+          {board === 'today'
+            ? 'Nobody has finished today’s puzzle yet. Be the first!'
+            : gauntlet
+              ? 'Nobody has cleared a Gauntlet quote yet. Be the first!'
+              : 'No players yet.'}
+        </p>
       ) : (
         <ol className="leaderboard">
           {rows.map((r) => {
@@ -101,7 +120,11 @@ export function LeaderboardModal({ day, uid, profile, onClose, onSignIn }: Props
           })}
         </ol>
       )}
-      <p className="fine">Points: 6 for a first-guess win, down to 1 for a win on the last guess. Only daily puzzles count.</p>
+      <p className="fine">
+        {gauntlet
+          ? 'Ranked by the most quotes cleared in a single run. Ties go to whoever got there first.'
+          : 'Points: 6 for a first-guess win, down to 1 for a win on the last guess. Only daily puzzles count.'}
+      </p>
     </Modal>
   );
 }

@@ -16,6 +16,10 @@ export interface Profile {
   lastDay: number;
   /** Last daily puzzle won (0 = none). */
   lastWonDay: number;
+  /** Most quotes cleared in one Gauntlet run. */
+  gauntletBest: number;
+  /** Gauntlet runs finished. */
+  gauntletPlayed: number;
   /** Profile picture; none means the player's initial is shown. */
   avatar?: AvatarRef | null;
 }
@@ -40,7 +44,7 @@ export interface DailyResult {
   name: string;
 }
 
-export type Board = 'today' | 'points' | 'streak';
+export type Board = 'today' | 'points' | 'streak' | 'gauntlet';
 
 export interface LeaderRow {
   uid: string;

@@ -6,10 +6,10 @@ import type { Board, LeaderboardResponse } from '@/lib/profile';
 export const dynamic = 'force-dynamic';
 
 const TOP = 50;
-const BOARDS: Board[] = ['today', 'points', 'streak'];
+const BOARDS: Board[] = ['today', 'points', 'streak', 'gauntlet'];
 
 /**
- * GET /api/leaderboard?board=today|points|streak&day=N
+ * GET /api/leaderboard?board=today|points|streak|gauntlet&day=N
  * Public. With a sign-in token, also returns the caller's rank.
  */
 export const GET = handler(async (req) => {
@@ -49,6 +49,30 @@ export const GET = handler(async (req) => {
         avatar: pics.get(r.uid) ?? null,
         value: r.points,
         detail: r.won ? `${r.guesses}/${MAX_GUESSES}` : `X/${MAX_GUESSES}`,
+      })),
+      me,
+    };
+  } else if (board === 'gauntlet') {
+    const ranked = { gauntletBest: { $gt: 0 } };
+    const [docs, mine] = await Promise.all([
+      users.find(ranked).sort({ gauntletBest: -1, gauntletBestAt: 1, _id: 1 }).limit(TOP).toArray(),
+      uid ? users.findOne({ _id: uid }) : null,
+    ]);
+    let me: LeaderboardResponse['me'] = null;
+    if (mine?.gauntletBest) {
+      const [ahead, total] = await Promise.all([
+        users.countDocuments({ gauntletBest: { $gt: mine.gauntletBest } }),
+        users.countDocuments(ranked),
+      ]);
+      me = { rank: ahead + 1, total, value: mine.gauntletBest };
+    }
+    body = {
+      rows: docs.map((u) => ({
+        uid: u._id,
+        name: u.name,
+        avatar: u.avatar ?? null,
+        value: u.gauntletBest ?? 0,
+        detail: `${u.gauntletPlayed ?? 0} ${u.gauntletPlayed === 1 ? 'run' : 'runs'}`,
       })),
       me,
     };

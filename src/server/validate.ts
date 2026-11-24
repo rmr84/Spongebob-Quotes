@@ -56,6 +56,8 @@ export function importedProfile(name: unknown, imported: unknown): Profile {
     distribution: Array(MAX_GUESSES).fill(0),
     lastDay: 0,
     lastWonDay: 0,
+    gauntletBest: 0,
+    gauntletPlayed: 0,
   };
   if (imported == null) return base;
 

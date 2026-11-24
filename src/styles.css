@@ -738,3 +738,78 @@ label.btn.is-disabled { opacity: 0.55; pointer-events: none; }
 }
 .password-toggle:hover { color: var(--ink); background: rgba(16, 37, 64, 0.06); }
 .password-toggle:focus-visible { outline: 3px solid rgba(255, 225, 77, 0.9); }
+
+/* ------------------------------------------------------------ Game modes */
+.mode-switch { display: flex; width: fit-content; margin: 0 auto 18px; }
+.mode-switch button { padding: 8px 20px; }
+.modal h3.first { margin-top: 4px; }
+.stat-row.two { grid-template-columns: repeat(2, 1fr); }
+.tabs.small.modes { grid-template-columns: repeat(2, 1fr); margin-bottom: 10px; }
+.tabs.small.modes + .tabs.small { margin-top: 0; }
+.quote-card + .result { margin-top: 14px; }
+
+/* Stage colors: easy → expert */
+.stage-easy { --stage: #3fbf5f; }
+.stage-medium { --stage: #f2c230; }
+.stage-hard { --stage: #f07f2e; }
+.stage-expert { --stage: #d63c3c; }
+.stage-pill {
+  display: inline-block;
+  padding: 3px 12px;
+  border-radius: 999px;
+  border: 2px solid var(--ink);
+  background: var(--stage, var(--yellow));
+  color: var(--ink);
+  font-weight: 900;
+  font-size: 0.85rem;
+}
+
+.gauntlet-intro h2 { margin: 0 0 8px; font-size: 1.5rem; }
+.gauntlet-intro p { margin: 0 0 14px; line-height: 1.5; }
+.stage-list { list-style: none; margin: 0 0 14px; padding: 0; display: grid; gap: 6px; }
+.stage-list li {
+  display: grid;
+  grid-template-columns: 90px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--stage) 16%, white);
+  font-weight: 700;
+}
+.stage-list .stage-pill { text-align: center; }
+.stage-guesses { color: #51627a; font-size: 0.9rem; }
+.gauntlet-best { font-weight: 700; }
+.start-run { width: 100%; font-size: 1.1rem; padding: 14px; }
+
+.run-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 30px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: rgba(11, 46, 92, 0.45);
+  color: white;
+  font-weight: 700;
+}
+.run-bar strong { color: var(--yellow); font-size: 1.1rem; }
+.gauntlet-input { margin-top: 14px; }
+.run-correct {
+  margin: 14px 0;
+  padding: 14px;
+  border-radius: var(--radius);
+  background: #eafbe9;
+  border: 3px solid var(--ink);
+  color: #1f7a3a;
+  font-weight: 900;
+  text-align: center;
+  animation: pop 0.35s ease;
+}
+
+@media (max-width: 600px) {
+  .mode-switch { width: 100%; display: grid; grid-template-columns: 1fr 1fr; }
+  .stage-list li { grid-template-columns: 78px 1fr auto; gap: 8px; font-size: 0.9rem; }
+  .result-actions .btn { flex: 1 1 100%; }
+}

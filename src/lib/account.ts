@@ -80,6 +80,12 @@ export async function submitDaily(day: number, state: GameState): Promise<Profil
   return (await api<{ profile: Profile }>('/api/results', { method: 'POST', body, auth: 'required' })).profile;
 }
 
+/** Records a finished Gauntlet run. Safe to call repeatedly: a run is only ever recorded once. */
+export async function submitGauntlet(seed: number, rounds: string[][]): Promise<Profile> {
+  const body = JSON.stringify({ seed, rounds });
+  return (await api<{ profile: Profile }>('/api/gauntlet', { method: 'POST', body, auth: 'required' })).profile;
+}
+
 export async function fetchResult(day: number): Promise<DailyResult | null> {
   return (await api<{ result: DailyResult | null }>(`/api/results/${day}`, { auth: 'required' })).result;
 }

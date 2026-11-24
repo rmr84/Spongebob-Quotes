@@ -9,10 +9,11 @@ import { AccountModal } from './AccountModal';
 import { HelpModal } from './HelpModal';
 import { LeaderboardModal } from './LeaderboardModal';
 import { StatsModal } from './StatsModal';
+import { Gauntlet } from './Gauntlet';
 import { dailyQuote, dayNumber } from '@/lib/daily';
 import { MAX_GUESSES, applyGuess, hints, newGame, shareText, type GameState } from '@/lib/game';
 import { QUOTE_DB, type QuoteDb } from '@/lib/quotes';
-import { loadDaily, loadStats, recordResult, saveDaily, type Stats } from '@/lib/storage';
+import { loadDaily, loadGauntletStats, loadStats, recordResult, saveDaily, type Stats } from '@/lib/storage';
 import { fetchResult, submitDaily } from '@/lib/account';
 import { profileStats } from '@/lib/profile';
 import { useAccount } from '@/lib/useAccount';
@@ -21,6 +22,8 @@ import { HelpIcon, UserIcon } from './Icons';
 import { PlayerAvatar } from './PlayerAvatar';
 
 const TITLE = 'Bikini Bottom Daily';
+
+type Mode = 'daily' | 'gauntlet';
 
 export default function App() {
   return <Game db={QUOTE_DB} />;
@@ -52,6 +55,13 @@ function Game({ db }: { db: QuoteDb }) {
     localStorage.getItem('bbd:seenHelp') ? null : 'help',
   );
   const [toast, setToast] = useState<string | null>(null);
+  const [mode, setMode] = useState<Mode>(() => (localStorage.getItem('bbd:mode') === 'gauntlet' ? 'gauntlet' : 'daily'));
+
+  function switchMode(m: Mode) {
+    setMode(m);
+    localStorage.setItem('bbd:mode', m);
+    scrollTo({ top: 0 });
+  }
 
   const game = daily;
   const answer = CHARACTER_BY_ID.get(game.quote.characterId)!;
@@ -104,7 +114,7 @@ function Game({ db }: { db: QuoteDb }) {
     const next = applyGuess(game, id);
     setDaily(next);
     if (next.status !== 'playing') {
-      setTimeout(() => setModal('stats'), 1400);
+      setTimeout(() => setModal((m) => m ?? 'stats'), 1400);
     }
   }
 
@@ -157,65 +167,88 @@ function Game({ db }: { db: QuoteDb }) {
   );
 
   return (
-    <Shell actions={actions} badge={<div className="puzzle-badge">Daily #{day}</div>}>
+    <Shell actions={actions} badge={<div className="puzzle-badge">{mode === 'daily' ? `Daily #${day}` : 'Gauntlet'}</div>}>
+      <nav className="tabs mode-switch" aria-label="Game mode">
+        <button className={mode === 'daily' ? 'on' : ''} aria-pressed={mode === 'daily'} onClick={() => switchMode('daily')}>
+          📅 Daily
+        </button>
+        <button className={mode === 'gauntlet' ? 'on' : ''} aria-pressed={mode === 'gauntlet'} onClick={() => switchMode('gauntlet')}>
+          🔥 Gauntlet
+        </button>
+      </nav>
 
-      <section className="quote-card" aria-live="polite">
-        <span className="quote-mark">“</span>
-        <blockquote>{game.quote.text}</blockquote>
-        <div className="quote-foot">
-          {game.status === 'playing' ? (
-            <span>
-              Guess {game.guesses.length + 1} of {MAX_GUESSES}
-            </span>
-          ) : (
-            <span>
-              — <strong>{answer.name}</strong>, “{game.quote.episode}” (Season {game.quote.season})
-            </span>
-          )}
-        </div>
-      </section>
-
-      <div className="hints">
-        {hints(game.quote).map((h) => {
-          const open = wrong >= h.unlockAfter || game.status !== 'playing';
-          return (
-            <div key={h.label} className={`hint ${open ? 'open' : ''}`}>
-              <span className="hint-label">{h.label}</span>
-              <span className="hint-value">
-                {open ? h.value : `🔒 in ${h.unlockAfter - wrong} miss${h.unlockAfter - wrong === 1 ? '' : 'es'}`}
-              </span>
-            </div>
-          );
-        })}
-      </div>
-
-      {game.status === 'playing' ? (
-        <GuessInput exclude={game.guesses} onGuess={guess} />
+      {mode === 'gauntlet' ? (
+        <Gauntlet
+          db={db}
+          title={TITLE}
+          uid={user?.uid ?? null}
+          profile={profile}
+          setProfile={setProfile}
+          onToast={setToast}
+          onShowLeaderboard={() => setModal('leaderboard')}
+          onSignIn={() => setModal('account')}
+        />
       ) : (
-        <section className={`result ${game.status}`}>
-          <div className="result-big">
-            <Avatar character={answer} big />
-            <div>
-              <h2>{game.status === 'won' ? pickCheer(game.guesses.length) : 'Tartar sauce!'}</h2>
-              <p>
-                {game.status === 'won'
-                  ? `You got it in ${game.guesses.length} ${game.guesses.length === 1 ? 'guess' : 'guesses'}.`
-                  : `It was ${answer.name}.`}
-              </p>
-            </div>
-          </div>
-          <div className="result-actions">
-            <button className="btn primary" onClick={share}>
-              Share
-            </button>
-            <div className="next">
-              Next quote in <Countdown onRollover={rollover} />
-            </div>
+        <>
+        <section className="quote-card" aria-live="polite">
+          <span className="quote-mark">“</span>
+          <blockquote>{game.quote.text}</blockquote>
+          <div className="quote-foot">
+            {game.status === 'playing' ? (
+              <span>
+                Guess {game.guesses.length + 1} of {MAX_GUESSES}
+              </span>
+            ) : (
+              <span>
+                — <strong>{answer.name}</strong>, “{game.quote.episode}” (Season {game.quote.season})
+              </span>
+            )}
           </div>
         </section>
-      )}
 
-      <GuessGrid guesses={game.guesses} answerId={answer.id} />
+        <div className="hints">
+          {hints(game.quote).map((h) => {
+            const open = wrong >= h.unlockAfter || game.status !== 'playing';
+            return (
+              <div key={h.label} className={`hint ${open ? 'open' : ''}`}>
+                <span className="hint-label">{h.label}</span>
+                <span className="hint-value">
+                  {open ? h.value : `🔒 in ${h.unlockAfter - wrong} miss${h.unlockAfter - wrong === 1 ? '' : 'es'}`}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+
+        {game.status === 'playing' ? (
+          <GuessInput exclude={game.guesses} onGuess={guess} />
+        ) : (
+          <section className={`result ${game.status}`}>
+            <div className="result-big">
+              <Avatar character={answer} big />
+              <div>
+                <h2>{game.status === 'won' ? pickCheer(game.guesses.length) : 'Tartar sauce!'}</h2>
+                <p>
+                  {game.status === 'won'
+                    ? `You got it in ${game.guesses.length} ${game.guesses.length === 1 ? 'guess' : 'guesses'}.`
+                    : `It was ${answer.name}.`}
+                </p>
+              </div>
+            </div>
+            <div className="result-actions">
+              <button className="btn primary" onClick={share}>
+                Share
+              </button>
+              <div className="next">
+                Next quote in <Countdown onRollover={rollover} />
+              </div>
+            </div>
+          </section>
+        )}
+
+        <GuessGrid guesses={game.guesses} answerId={answer.id} />
+        </>
+      )}
 
      
       {modal === 'help' && <HelpModal total={db.quotes.length} onClose={closeModal} />}
@@ -225,6 +258,7 @@ function Game({ db }: { db: QuoteDb }) {
           signedIn={!!profile}
           onSignIn={() => setModal('account')}
           highlight={daily.status === 'won' ? daily.guesses.length : undefined}
+          gauntlet={profile ? { best: profile.gauntletBest, played: profile.gauntletPlayed } : loadGauntletStats()}
           onClose={closeModal}
         />
       )}
@@ -241,6 +275,7 @@ function Game({ db }: { db: QuoteDb }) {
       {modal === 'leaderboard' && (
         <LeaderboardModal
           day={day}
+          initialBoard={mode === 'gauntlet' ? 'gauntlet' : 'today'}
           uid={user?.uid ?? null}
           profile={profile}
           onClose={closeModal}

@@ -1,4 +1,5 @@
 import { MAX_GUESSES } from '../lib/game';
+import { STAGES } from '../lib/gauntlet';
 import { Modal } from './Modal';
 
 export function HelpModal({ total, onClose }: { total: number; onClose: () => void }) {
@@ -17,6 +18,12 @@ export function HelpModal({ total, onClose }: { total: number; onClose: () => vo
         the character's <strong>first initial</strong> after 4.
       </p>
       <p>A new quote arrives at midnight, your local time.</p>
+      <h3>🔥 Gauntlet</h3>
+      <p>
+        Want more? In <strong>Gauntlet</strong> mode the quotes keep coming. They get harder as you go and you get fewer
+        guesses: <strong>{STAGES[0].guesses}</strong> per quote at first, then <strong>{STAGES[2].guesses}</strong> from
+        quote {STAGES[2].first}, and just <strong>{STAGES[3].guesses}</strong> from quote {STAGES[3].first}. Miss one and the run is over. Your best run goes on its own leaderboard.
+      </p>
       <p className="fine">
         {total} well-known quotes, checked word for word against the episode transcripts on the SpongeBob fan wiki (CC
         BY-SA). This is an unofficial fan project and isn't affiliated with Nickelodeon.

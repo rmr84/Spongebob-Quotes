@@ -2,8 +2,13 @@ import 'server-only';
 import { MongoClient, type Binary, type ClientSession, type Collection, type Db } from 'mongodb';
 import type { DailyResult, Profile } from '@/lib/profile';
 
-export interface UserDoc extends Profile {
+export interface UserDoc extends Omit<Profile, 'gauntletBest' | 'gauntletPlayed'> {
   _id: string; // Firebase uid
+  // Missing on accounts created before Gauntlet mode existed.
+  gauntletBest?: number;
+  gauntletPlayed?: number;
+  /** When gauntletBest was set; earlier wins a tie. */
+  gauntletBestAt?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -11,6 +16,16 @@ export interface UserDoc extends Profile {
 export interface ResultDoc extends DailyResult {
   _id: string; // `${uid}:${day}` — one result per player per day
   uid: string;
+  createdAt: Date;
+}
+
+/** One finished Gauntlet run. The seed is in the id, so a run can only be scored once. */
+export interface RunDoc {
+  _id: string; // `${uid}:${seed}`
+  uid: string;
+  seed: number;
+  score: number;
+  rounds: string[][];
   createdAt: Date;
 }
 
@@ -40,11 +55,13 @@ async function connect(): Promise<Conn> {
     db.collection<UserDoc>('users').createIndexes([
       { key: { score: -1 }, name: 'score' },
       { key: { maxStreak: -1 }, name: 'maxStreak' },
+      { key: { gauntletBest: -1, gauntletBestAt: 1 }, name: 'gauntletBest' },
     ]),
     db.collection<ResultDoc>('results').createIndexes([
       { key: { day: 1, points: -1, createdAt: 1 }, name: 'daily_board' },
       { key: { uid: 1 }, name: 'uid' },
     ]),
+    db.collection<RunDoc>('runs').createIndex({ uid: 1, createdAt: -1 }, { name: 'uid' }),
   ]);
   return { client, db };
 }
@@ -66,12 +83,14 @@ export async function getDb(): Promise<Db> {
 export async function collections(): Promise<{
   users: Collection<UserDoc>;
   results: Collection<ResultDoc>;
+  runs: Collection<RunDoc>;
   avatars: Collection<AvatarDoc>;
 }> {
   const db = await getDb();
   return {
     users: db.collection<UserDoc>('users'),
     results: db.collection<ResultDoc>('results'),
+    runs: db.collection<RunDoc>('runs'),
     avatars: db.collection<AvatarDoc>('avatars'),
   };
 }
@@ -79,7 +98,20 @@ export async function collections(): Promise<{
 /** The public profile fields of a user document. */
 export function toProfile(doc: UserDoc): Profile {
   const { name, score, played, wins, currentStreak, maxStreak, distribution, lastDay, lastWonDay, avatar } = doc;
-  return { name, score, played, wins, currentStreak, maxStreak, distribution, lastDay, lastWonDay, avatar: avatar ?? null };
+  return {
+    name,
+    score,
+    played,
+    wins,
+    currentStreak,
+    maxStreak,
+    distribution,
+    lastDay,
+    lastWonDay,
+    gauntletBest: doc.gauntletBest ?? 0,
+    gauntletPlayed: doc.gauntletPlayed ?? 0,
+    avatar: avatar ?? null,
+  };
 }
 
 /** Runs `fn` in a transaction (Atlas clusters are replica sets, so this is supported). */

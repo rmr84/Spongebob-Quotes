@@ -17,7 +17,7 @@ export function msUntilTomorrow(now = new Date()): number {
   return next.getTime() - now.getTime();
 }
 
-function mulberry32(seed: number) {
+export function mulberry32(seed: number) {
   let a = seed >>> 0;
   return () => {
     a = (a + 0x6d2b79f5) >>> 0;
@@ -29,7 +29,7 @@ function mulberry32(seed: number) {
 }
 
 /** Stable key for a quote, so the daily order survives reordering of quotes.json. */
-function key(q: Quote) {
+export function quoteKey(q: Quote) {
   let h = 2166136261;
   for (const ch of q.text + q.characterId) h = Math.imul(h ^ ch.charCodeAt(0), 16777619);
   return h >>> 0;
@@ -51,7 +51,7 @@ export const PINNED: Record<number, string> = {
 export function dailyQuote(db: QuoteDb, day: number): Quote {
   const n = db.quotes.length;
   const cycle = Math.floor((day - 1) / n);
-  const order = [...db.quotes].sort((a, b) => key(a) - key(b));
+  const order = [...db.quotes].sort((a, b) => quoteKey(a) - quoteKey(b));
   const rand = mulberry32(0x5b0b + cycle * 7919);
   for (let i = n - 1; i > 0; i--) {
     const j = Math.floor(rand() * (i + 1));
