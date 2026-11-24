@@ -638,10 +638,11 @@ blockquote {
   /* Leaderboard rows: details go under the name. */
   /* Sign-in / choose-a-name pages: centered column. */
   .signin { width: 100%; max-width: 420px; margin: 4dvh auto 0; text-align: center; }
-  .signin .form label { text-align: left; }
-  .signin .form label.check { justify-content: center; }
+  .signin label { text-align: left; }
+  .signin label.check { justify-content: center; }
   .signin .form-links { flex-direction: column; align-items: center; gap: 12px; }
-  .signin .form-row { justify-content: center; }
+  .signin .form-row { flex-direction: column; align-items: stretch; gap: 12px; }
+  .signin .form-row .btn { flex: none; width: 100%; }
 
   /* Leaderboard board picker spans the page; the sign-in prompt stacks above its button. */
   .my-rank { flex-direction: column; align-items: stretch; gap: 8px; text-align: center; padding: 10px 12px; }
