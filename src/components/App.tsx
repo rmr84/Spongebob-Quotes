@@ -273,6 +273,7 @@ function Game({ db }: { db: QuoteDb }) {
           onSignIn={() => setModal('account')}
           highlight={daily.status === 'won' ? daily.guesses.length : undefined}
           gauntlet={profile ? { best: profile.gauntletBest, played: profile.gauntletPlayed } : loadGauntletStats()}
+          initialMode={mode}
           onClose={closeModal}
         />
       )}
