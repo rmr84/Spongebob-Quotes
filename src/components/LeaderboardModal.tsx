@@ -13,6 +13,8 @@ interface Props {
   profile: Profile | null;
   onClose: () => void;
   onSignIn: () => void;
+  /** Close the leaderboard and start playing that mode. */
+  onPlay: (mode: 'daily' | 'gauntlet') => void;
 }
 
 const DAILY_TABS: { id: Board; label: string }[] = [
@@ -22,7 +24,7 @@ const DAILY_TABS: { id: Board; label: string }[] = [
 ];
 const UNITS: Record<Board, string> = { today: 'pts', points: 'pts', streak: 'days', gauntlet: 'quotes' };
 
-export function LeaderboardModal({ day, initialBoard, uid, profile, onClose, onSignIn }: Props) {
+export function LeaderboardModal({ day, initialBoard, uid, profile, onClose, onSignIn, onPlay }: Props) {
   const [board, setBoard] = useState<Board>(initialBoard);
   const [data, setData] = useState<LeaderboardResponse | null>(null);
   const [error, setError] = useState('');
@@ -85,6 +87,10 @@ export function LeaderboardModal({ day, initialBoard, uid, profile, onClose, onS
           <span>{gauntlet ? 'Finish a Gauntlet run to get ranked.' : 'Finish today’s puzzle to get ranked.'}</span>
         )}
       </div>
+
+      <button className="btn play-now" onClick={() => onPlay(gauntlet ? 'gauntlet' : 'daily')}>
+        {gauntlet ? '🔥 Play Gauntlet' : '📅 Play today’s puzzle'}
+      </button>
 
       {error ? (
         <p className="form-error">Couldn’t load the leaderboard: {error}</p>

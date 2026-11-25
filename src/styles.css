@@ -510,6 +510,9 @@ blockquote {
   header.top h1 { font-size: clamp(1.45rem, 7.2vw, 1.9rem); text-align: center; white-space: nowrap; }
   header.top .puzzle-badge { justify-self: center; }
 
+  /* Home replaces Help in the tab bar; Help lives in the Account page. */
+  header.top .actions .icon-btn.help-tab { display: none; }
+
   /* While typing, the keyboard is up: hide the tab bar so it doesn't float over the suggestions. */
   body:has(input:focus) header.top .actions { display: none; }
 
@@ -816,3 +819,26 @@ label.btn.is-disabled { opacity: 0.55; pointer-events: none; }
   .stage-list li { grid-template-columns: 78px 1fr auto; gap: 8px; font-size: 0.9rem; }
   .result-actions .btn { flex: 1 1 100%; }
 }
+
+/* Home tab is phone-only (on desktop the modal's ✕ already gets you home). */
+@media (min-width: 601px) {
+  header.top .actions .icon-btn.home-tab { display: none; }
+}
+.help-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: fit-content;
+  margin: 22px auto 0;
+  padding: 8px 14px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--sea-mid);
+  font-weight: 800;
+}
+.help-link svg { width: 20px; height: 20px; }
+.help-link:hover { background: rgba(22, 118, 184, 0.08); }
+
+.play-now { display: block; width: 100%; margin: 0 0 12px; }

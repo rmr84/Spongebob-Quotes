@@ -15,7 +15,7 @@ import type { AccountState } from '../lib/useAccount';
 import type { Stats } from '../lib/storage';
 import type { GameState } from '../lib/game';
 import { Modal } from './Modal';
-import { CheckIcon, EyeIcon, EyeOffIcon, SignOutIcon } from './Icons';
+import { CheckIcon, EyeIcon, EyeOffIcon, HelpIcon, SignOutIcon } from './Icons';
 import { PlayerAvatar } from './PlayerAvatar';
 import { CHARACTERS } from '../data/characters';
 import { Avatar } from './Avatar';
@@ -27,9 +27,10 @@ interface Props {
   daily: GameState;
   onClose: () => void;
   onShowLeaderboard: () => void;
+  onShowHelp: () => void;
 }
 
-export function AccountModal({ account, localStats, day, daily, onClose, onShowLeaderboard }: Props) {
+export function AccountModal({ account, localStats, day, daily, onClose, onShowLeaderboard, onShowHelp }: Props) {
   const { user, profile } = account;
   // Lifted up so the title can follow the sign-in / create-account toggle.
   const [mode, setMode] = useState<AuthMode>('signin');
@@ -68,6 +69,10 @@ export function AccountModal({ account, localStats, day, daily, onClose, onShowL
         />
       )}
       {account.error && <p className="form-error">{account.error}</p>}
+      <button type="button" className="help-link" onClick={onShowHelp}>
+        <HelpIcon />
+        How to play
+      </button>
     </Modal>
   );
 }

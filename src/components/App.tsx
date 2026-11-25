@@ -18,7 +18,7 @@ import { fetchResult, submitDaily } from '@/lib/account';
 import { profileStats } from '@/lib/profile';
 import { useAccount } from '@/lib/useAccount';
 import { Avatar } from './Avatar';
-import { HelpIcon, UserIcon } from './Icons';
+import { HelpIcon, HomeIcon, UserIcon } from './Icons';
 import { PlayerAvatar } from './PlayerAvatar';
 
 const TITLE = 'Bikini Bottom Daily';
@@ -132,6 +132,11 @@ function Game({ db }: { db: QuoteDb }) {
     }
   }
 
+  function goHome() {
+    closeModal();
+    scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
   function closeModal() {
     if (modal === 'help') localStorage.setItem('bbd:seenHelp', '1');
     setModal(null);
@@ -139,7 +144,12 @@ function Game({ db }: { db: QuoteDb }) {
 
   const actions = (
     <>
-      <button className={`icon-btn ${modal === 'help' ? 'on' : ''}`} aria-label="How to play" aria-current={modal === 'help' ? 'page' : undefined} onClick={() => setModal('help')}>
+      {/* Phones: a Home tab takes Help's place in the tab bar (Help moves into the Account page). */}
+      <button className={`icon-btn home-tab ${modal === null ? 'on' : ''}`} aria-label="Home" aria-current={modal === null ? 'page' : undefined} onClick={goHome}>
+        <span className="action-icon"><HomeIcon /></span>
+        <span className="action-label">Home</span>
+      </button>
+      <button className={`icon-btn help-tab ${modal === 'help' ? 'on' : ''}`} aria-label="How to play" aria-current={modal === 'help' ? 'page' : undefined} onClick={() => setModal('help')}>
         <span className="action-icon"><HelpIcon /></span>
         <span className="action-label">Help</span>
       </button>
@@ -270,6 +280,7 @@ function Game({ db }: { db: QuoteDb }) {
           daily={daily}
           onClose={closeModal}
           onShowLeaderboard={() => setModal('leaderboard')}
+          onShowHelp={() => setModal('help')}
         />
       )}
       {modal === 'leaderboard' && (
@@ -280,6 +291,10 @@ function Game({ db }: { db: QuoteDb }) {
           profile={profile}
           onClose={closeModal}
           onSignIn={() => setModal('account')}
+          onPlay={(m) => {
+            switchMode(m);
+            setModal(null);
+          }}
         />
       )}
       {toast && <div className="toast">{toast}</div>}
