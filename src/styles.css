@@ -899,13 +899,17 @@ label.btn.is-disabled { opacity: 0.55; pointer-events: none; }
 
 @media (max-width: 600px) {
   .picker-trigger { min-height: 50px; padding: 6px 10px; gap: 8px; }
-  /* Phones: the list is part of the page (not floating), so the page grows to fit it and can
-     always scroll it clear of the tab bar. A floating list could end up stuck behind the bar. */
+  /* Phones: the list is part of the page and has no scroll box of its own, so an ordinary swipe
+     scrolls the page down to the last character. (A scroll box inside the page traps the swipe
+     once it hits its end, leaving the bottom rows stuck behind the tab bar on iOS.) */
   .options.picker-list {
     position: static;
     margin-top: 8px;
-    max-height: min(360px, 55dvh);
-    scroll-margin-bottom: calc(96px + env(safe-area-inset-bottom));
+    max-height: none;
+    overflow: visible;
   }
   .picker-label.placeholder { font-size: 0.95rem; }
 }
+
+/* Home tab: SpongeBob's pineapple. */
+.action-icon.home-icon img { display: block; height: 30px; width: auto; filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.35)); }

@@ -43,8 +43,17 @@ export function GuessInput({ exclude, disabled, onGuess }: Props) {
     if (disabled) return;
     setActive(Math.max(0, options.findIndex((c) => c.id === selected)));
     setOpen(true);
-    // Make sure the whole list is on screen (clear of the phone tab bar; see scroll-margin in CSS).
-    requestAnimationFrame(() => listRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }));
+    requestAnimationFrame(() => {
+      const root = rootRef.current;
+      if (!root) return;
+      if (matchMedia('(max-width: 600px)').matches) {
+        // Phones: the list is part of the page and scrolls with it. Bring the picker to the
+        // top of the screen so as much of the list as possible is showing.
+        window.scrollTo({ top: root.getBoundingClientRect().top + window.scrollY - 12, behavior: 'smooth' });
+      } else {
+        listRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    });
   }
 
   function choose(id: string) {

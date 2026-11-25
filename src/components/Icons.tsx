@@ -14,13 +14,6 @@ const base: SVGProps<SVGSVGElement> = {
   'aria-hidden': true,
 };
 
-export const HomeIcon = () => (
-  <svg {...base}>
-    <path d="M3.5 11 12 3.8 20.5 11" />
-    <path d="M5.8 9.2V20h4.4v-5.6h3.6V20h4.4V9.2" />
-  </svg>
-);
-
 export const HelpIcon = () => (
   <svg {...base}>
     <circle cx="12" cy="12" r="9.5" />

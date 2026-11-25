@@ -18,7 +18,7 @@ import { fetchResult, submitDaily } from '@/lib/account';
 import { profileStats } from '@/lib/profile';
 import { useAccount } from '@/lib/useAccount';
 import { Avatar } from './Avatar';
-import { HelpIcon, HomeIcon, UserIcon } from './Icons';
+import { HelpIcon, UserIcon } from './Icons';
 import { PlayerAvatar } from './PlayerAvatar';
 import { Bubbles } from './Bubbles';
 
@@ -147,7 +147,7 @@ function Game({ db }: { db: QuoteDb }) {
     <>
       {/* Phones: a Home tab takes Help's place in the tab bar (Help moves into the Account page). */}
       <button className={`icon-btn home-tab ${modal === null ? 'on' : ''}`} aria-label="Home" aria-current={modal === null ? 'page' : undefined} onClick={goHome}>
-        <span className="action-icon"><HomeIcon /></span>
+        <span className="action-icon home-icon"><img src="/pineapple-home.png" alt="" width={20} height={34} /></span>
         <span className="action-label">Home</span>
       </button>
       <button className={`icon-btn help-tab ${modal === 'help' ? 'on' : ''}`} aria-label="How to play" aria-current={modal === 'help' ? 'page' : undefined} onClick={() => setModal('help')}>
