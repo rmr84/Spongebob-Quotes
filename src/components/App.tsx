@@ -20,6 +20,7 @@ import { useAccount } from '@/lib/useAccount';
 import { Avatar } from './Avatar';
 import { HelpIcon, HomeIcon, UserIcon } from './Icons';
 import { PlayerAvatar } from './PlayerAvatar';
+import { Bubbles } from './Bubbles';
 
 const TITLE = 'Bikini Bottom Daily';
 
@@ -216,8 +217,11 @@ function Game({ db }: { db: QuoteDb }) {
           </div>
         </section>
 
-        <div className="hints">
-          {hints(game.quote).map((h) => {
+        <div className={`hints ${game.status !== 'playing' ? 'two' : ''}`}>
+          {/* Once the puzzle is over the answer is shown, so the initial hint adds nothing. */}
+          {hints(game.quote)
+            .filter((h) => game.status === 'playing' || h.label !== 'Initial')
+            .map((h) => {
             const open = wrong >= h.unlockAfter || game.status !== 'playing';
             return (
               <div key={h.label} className={`hint ${open ? 'open' : ''}`}>
@@ -311,14 +315,4 @@ function startDaily(db: QuoteDb, day: number): GameState {
 
 function pickCheer(n: number) {
   return ['Barnacles, first try!', 'Fin-tastic!', 'Order up!', 'Aye aye, captain!', 'Phew, nice save!', 'Just in time!'][n - 1];
-}
-
-function Bubbles() {
-  return (
-    <div className="bubbles" aria-hidden="true">
-      {Array.from({ length: 14 }, (_, i) => (
-        <span key={i} style={{ left: `${(i * 37) % 100}%`, animationDelay: `${(i * 1.3) % 9}s`, width: 8 + ((i * 7) % 22), height: 8 + ((i * 7) % 22) }} />
-      ))}
-    </div>
-  );
 }
