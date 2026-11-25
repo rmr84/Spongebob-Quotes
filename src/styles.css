@@ -899,6 +899,13 @@ label.btn.is-disabled { opacity: 0.55; pointer-events: none; }
 
 @media (max-width: 600px) {
   .picker-trigger { min-height: 50px; padding: 6px 10px; gap: 8px; }
-  .options.picker-list { scroll-margin-bottom: calc(90px + env(safe-area-inset-bottom)); }
+  /* Phones: the list is part of the page (not floating), so the page grows to fit it and can
+     always scroll it clear of the tab bar. A floating list could end up stuck behind the bar. */
+  .options.picker-list {
+    position: static;
+    margin-top: 8px;
+    max-height: min(360px, 55dvh);
+    scroll-margin-bottom: calc(96px + env(safe-area-inset-bottom));
+  }
   .picker-label.placeholder { font-size: 0.95rem; }
 }

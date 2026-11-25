@@ -113,7 +113,7 @@ export function GuessInput({ exclude, disabled, onGuess }: Props) {
               <span className="picker-label">{chosen.name}</span>
             </>
           ) : (
-            <span className="picker-label placeholder">Who said it? Choose a character</span>
+            <span className="picker-label placeholder">Choose who said it</span>
           )}
           <span className="picker-caret" aria-hidden="true">
             ▾
