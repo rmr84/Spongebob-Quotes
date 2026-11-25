@@ -510,6 +510,9 @@ blockquote {
   header.top h1 { font-size: clamp(1.45rem, 7.2vw, 1.9rem); text-align: center; white-space: nowrap; }
   header.top .puzzle-badge { justify-self: center; }
 
+  /* While typing, the keyboard is up: hide the tab bar so it doesn't float over the suggestions. */
+  body:has(input:focus) header.top .actions { display: none; }
+
   /* Buttons become a tab bar pinned to the bottom of the screen. */
   header.top .actions {
     position: fixed;
