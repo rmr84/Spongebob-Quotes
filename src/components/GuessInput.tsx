@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
-import { CHARACTERS, type Character } from '../data/characters';
+import { CHARACTERS, CHARACTER_BY_ID } from '../data/characters';
 import { Avatar } from './Avatar';
 
 interface Props {
@@ -8,137 +8,135 @@ interface Props {
   onGuess: (id: string) => void;
 }
 
+/**
+ * Pick a character instead of typing one: a button opens a scrollable list,
+ * tapping one selects it, and Guess submits. No text box means no on-screen
+ * keyboard (or iOS autofill bar) on phones.
+ */
 export function GuessInput({ exclude, disabled, onGuess }: Props) {
-  const [query, setQuery] = useState('');
   const [open, setOpen] = useState(false);
+  const [selected, setSelected] = useState<string | null>(null);
   const [active, setActive] = useState(0);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const rowRef = useRef<HTMLDivElement>(null);
-  const [listHeight, setListHeight] = useState<number | undefined>();
+  const rootRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const listRef = useRef<HTMLUListElement>(null);
 
-  // Keep the suggestion list above the on-screen keyboard: size it to the
-  // part of the screen that's still visible below the input.
+  const options = useMemo(() => CHARACTERS.filter((c) => !exclude.includes(c.id)), [exclude]);
+  const chosen = selected ? CHARACTER_BY_ID.get(selected) : undefined;
+
+  // Close when tapping anywhere else.
   useEffect(() => {
     if (!open) return;
-    const vv = window.visualViewport;
-    const fit = () => {
-      const row = rowRef.current;
-      if (!row || !vv) return;
-      const visibleBottom = vv.offsetTop + vv.height;
-      setListHeight(Math.max(140, Math.min(300, visibleBottom - row.getBoundingClientRect().bottom - 16)));
+    const onDown = (e: PointerEvent) => {
+      if (!rootRef.current?.contains(e.target as Node)) setOpen(false);
     };
-    fit();
-    vv?.addEventListener('resize', fit);
-    vv?.addEventListener('scroll', fit);
-    window.addEventListener('scroll', fit, { passive: true });
-    return () => {
-      vv?.removeEventListener('resize', fit);
-      vv?.removeEventListener('scroll', fit);
-      window.removeEventListener('scroll', fit);
-    };
+    document.addEventListener('pointerdown', onDown);
+    return () => document.removeEventListener('pointerdown', onDown);
   }, [open]);
 
-  // On phones, once the keyboard is up, scroll so the quote sits at the top of
-  // the screen with the input and suggestions right under it.
-  function bringIntoView() {
-    if (!matchMedia('(max-width: 600px) and (pointer: coarse)').matches) return;
-    setTimeout(() => {
-      const card = document.querySelector('.quote-card');
-      if (!card) return;
-      const top = card.getBoundingClientRect().top + window.scrollY - 30; // room for the quote mark
-      window.scrollTo({ top, behavior: 'smooth' });
-    }, 350);
+  // Keep the highlighted option in view while using the arrow keys.
+  useEffect(() => {
+    if (open) listRef.current?.children[active]?.scrollIntoView({ block: 'nearest' });
+  }, [open, active]);
+
+  function openList() {
+    if (disabled) return;
+    setActive(Math.max(0, options.findIndex((c) => c.id === selected)));
+    setOpen(true);
+    // Make sure the whole list is on screen (clear of the phone tab bar; see scroll-margin in CSS).
+    requestAnimationFrame(() => listRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }));
   }
 
-  const options = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    const available = CHARACTERS.filter((c) => !exclude.includes(c.id));
-    if (!q) return available;
-    return available
-      .filter((c) => c.name.toLowerCase().includes(q))
-      .sort((a, b) => Number(!a.name.toLowerCase().startsWith(q)) - Number(!b.name.toLowerCase().startsWith(q)));
-  }, [query, exclude]);
-
-  function submit(c: Character | undefined) {
-    if (!c) return;
-    onGuess(c.id);
-    setQuery('');
-    setActive(0);
+  function choose(id: string) {
+    setSelected(id);
     setOpen(false);
-    inputRef.current?.focus();
+    triggerRef.current?.focus({ preventScroll: true });
   }
 
-  function onKeyDown(e: KeyboardEvent<HTMLInputElement>) {
-    if (e.key === 'ArrowDown') {
+  function submit() {
+    if (!selected || disabled) return;
+    onGuess(selected);
+    setSelected(null);
+  }
+
+  function onKeyDown(e: KeyboardEvent) {
+    if (!open) {
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        openList();
+      }
+      return;
+    }
+    const move = (d: number) => {
       e.preventDefault();
-      setOpen(true);
-      setActive((a) => Math.min(a + 1, options.length - 1));
-    } else if (e.key === 'ArrowUp') {
+      setActive((a) => Math.min(options.length - 1, Math.max(0, a + d)));
+    };
+    if (e.key === 'ArrowDown') move(1);
+    else if (e.key === 'ArrowUp') move(-1);
+    else if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
-      setActive((a) => Math.max(a - 1, 0));
-    } else if (e.key === 'Enter') {
-      e.preventDefault();
-      if (open || query) submit(options[active]);
+      if (options[active]) choose(options[active].id);
     } else if (e.key === 'Escape') {
       setOpen(false);
+    } else if (/^[a-z]$/i.test(e.key)) {
+      // Type a letter to jump to the next character starting with it.
+      const k = e.key.toLowerCase();
+      const n = options.length;
+      for (let i = 1; i <= n; i++) {
+        const idx = (active + i) % n;
+        if (options[idx].name.toLowerCase().startsWith(k)) {
+          setActive(idx);
+          break;
+        }
+      }
     }
   }
 
   return (
-    <div className="guess-input">
-      <div className="guess-row" ref={rowRef}>
-        <input
-          ref={inputRef}
-          type="text"
-          name="bbd-character"
-          enterKeyHint="go"
-          autoComplete="off"
-          autoCapitalize="words"
-          autoCorrect="off"
-          spellCheck={false}
-          role="combobox"
+    <div className="guess-input" ref={rootRef}>
+      <div className="guess-row">
+        <button
+          ref={triggerRef}
+          type="button"
+          className={`picker-trigger ${chosen ? 'has-value' : ''}`}
+          aria-haspopup="listbox"
           aria-expanded={open}
           aria-controls="guess-options"
-          aria-autocomplete="list"
           aria-activedescendant={open && options[active] ? `opt-${options[active].id}` : undefined}
-          aria-label="Who said it?"
-          placeholder="Who said it? Start typing…"
-          value={query}
           disabled={disabled}
-          onChange={(e) => {
-            setQuery(e.target.value);
-            setActive(0);
-            setOpen(true);
-          }}
-          onFocus={() => {
-            setOpen(true);
-            bringIntoView();
-          }}
-          onClick={() => setOpen(true)}
-          onBlur={() => setTimeout(() => setOpen(false), 120)}
+          onClick={() => (open ? setOpen(false) : openList())}
           onKeyDown={onKeyDown}
-        />
-        <button className="btn primary" disabled={disabled || !options.length} onClick={() => submit(options[active])}>
+        >
+          {chosen ? (
+            <>
+              <Avatar character={chosen} />
+              <span className="picker-label">{chosen.name}</span>
+            </>
+          ) : (
+            <span className="picker-label placeholder">Who said it? Choose a character</span>
+          )}
+          <span className="picker-caret" aria-hidden="true">
+            ▾
+          </span>
+        </button>
+        <button className="btn primary" disabled={disabled || !selected} onClick={submit}>
           Guess
         </button>
       </div>
-      {open && !disabled && options.length > 0 && (
-        <ul id="guess-options" role="listbox" className="options" style={{ maxHeight: listHeight }}>
+      {open && !disabled && (
+        <ul id="guess-options" role="listbox" aria-label="Characters" className="options picker-list" ref={listRef}>
           {options.map((c, i) => (
             <li
               key={c.id}
               id={`opt-${c.id}`}
               role="option"
-              aria-selected={i === active}
-              className={i === active ? 'active' : ''}
+              aria-selected={c.id === selected}
+              className={`${i === active ? 'active' : ''} ${c.id === selected ? 'selected' : ''}`}
               onMouseEnter={() => setActive(i)}
-              onMouseDown={(e) => {
-                e.preventDefault();
-                submit(c);
-              }}
+              onClick={() => choose(c.id)}
             >
               <Avatar character={c} />
-              {c.name}
+              <span>{c.name}</span>
             </li>
           ))}
         </ul>
